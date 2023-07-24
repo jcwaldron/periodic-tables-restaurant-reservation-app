@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-
+import ErrorAlert from "../layout/ErrorAlert";
 
 const { REACT_APP_API_BASE_URL } = process.env;
 
@@ -8,7 +8,7 @@ const { REACT_APP_API_BASE_URL } = process.env;
 
 function NewReservation(){
   const history = useHistory();
-
+  const [error, setError] = useState(null);
 
 // v this section loads all reservations v
   const [reservations, setReservations] = useState([]);
@@ -46,6 +46,25 @@ function NewReservation(){
   
     async function handleFormSubmit(event) {
       event.preventDefault();
+      
+      const reservationDate = new Date(`${formData.reservation_date}T00:00:00`);
+      const today = new Date();
+
+      // Check if the reservation date is a Tuesday
+      if (reservationDate.getDay() === 2) {
+        const error = { message: "The restaurant is closed on Tuesdays. Please choose another date." };
+        setError(error); 
+        console.log(error)
+        return;
+      }
+
+      
+      // Check if the reservation date is in the past
+      if (reservationDate < today) {
+        const error = { message: "Reservation date cannot be in the past. Please choose a future date." };
+        setError(error); 
+        return;
+      }
     
       try {
         const response = await fetch(`${REACT_APP_API_BASE_URL}/reservations`, {
@@ -115,6 +134,7 @@ function NewReservation(){
     <td id="cancelBtnID">
               <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
             </td>
+            <ErrorAlert error={error} />
         </main>
     )
 }
