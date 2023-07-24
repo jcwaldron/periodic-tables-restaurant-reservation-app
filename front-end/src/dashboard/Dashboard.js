@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { listReservations } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import useQuery from "../utils/useQuery";
@@ -30,6 +31,15 @@ function Dashboard({today}) {
       .catch(setReservationsError);
     return () => abortController.abort();
   }
+
+  // Helper function to add or subtract days from a date
+  function addDays(date, days) {
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
+  }
+
+
   return (
     <main>
       <h1>Dashboard</h1>
@@ -38,6 +48,17 @@ function Dashboard({today}) {
       </div>
       <ErrorAlert error={reservationsError} />
       {JSON.stringify(reservations)}
+      <p>
+      <Link to={`/dashboard?date=${addDays(date, -1)}`} className="btn btn-secondary m-1">
+          Previous
+        </Link>
+        <Link to={`/dashboard`} className="btn btn-primary m-1">
+          Today
+        </Link>
+        <Link to={`/dashboard?date=${addDays(date, 1)}`} className="btn btn-secondary m-1">
+          Next
+        </Link>
+      </p>
     </main>
   );
 }
