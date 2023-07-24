@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+
+
 const { REACT_APP_API_BASE_URL } = process.env;
 
+
+
 function NewReservation(){
+  const history = useHistory();
+
 
 // v this section loads all reservations v
   const [reservations, setReservations] = useState([]);
+
 
   useEffect(()=>{
     async function loadReservations() {
@@ -54,6 +62,8 @@ function NewReservation(){
           // Update UI or perform any necessary actions
           console.log("Reservation created:", newReservation);
           setFormData(initialFormData); // Reset the form after successful submission
+
+          history.push("/dashboard");
         } else {
           // Handle error
           console.log("Error creating reservation");
@@ -63,10 +73,16 @@ function NewReservation(){
         console.log("Error:", error.message);
       }
     }
+
+// Event handler for the "Cancel" button
+  function handleCancel() {
+    history.push("/dashboard");
+  }
     
 
     return (
         <main>
+
     <form name="create" onSubmit={handleFormSubmit}>
       <table>
         <tbody>
@@ -96,6 +112,9 @@ function NewReservation(){
         </tbody>
       </table>
     </form>
+    <td id="cancelBtnID">
+              <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
+            </td>
         </main>
     )
 }
