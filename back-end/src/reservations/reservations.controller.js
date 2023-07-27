@@ -1,6 +1,7 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
+// v VALIDATOR FUNCTIONS v
 function hasValidFields(req, res, next) {
   const { data = {} } = req.body;
   const validFields = new Set([
@@ -88,15 +89,33 @@ function isValidDate(req, res, next){
   if (day === 2) {
       return next({ status: 400, message: `Restaurant is closed on Tuesdays` });
   }
+  
   if (reservation_date < new Date()) {
       return next({ status: 400, message: `Reservation must be set in the future` });
   }
   next();
 }
 
+function isValidTime(req, res, next){
+  const { data = {} } = req.body;
+  const reservation_date = new Date(data['reservation_date']);
+  const reservationHour = reservation_date.getUTCHours();
+  const reservationMinutes = reservation_date.getUTCMinutes();
+
+  if (reservationHour <= 10 && reservationMinutes < 30) {
+    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM."})
+  }
+
+  if (reservationHour >= 21 && reservationMinutes > 30) {
+    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM."})
+  }
+
+  next();
+}
+
 function isTime(req, res, next){
   const { data = {} } = req.body;
-  // TODO: Change this...
+  
   if (/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(data['reservation_time']) || /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(data['reservation_time']) ){
     return next();
   }
@@ -119,6 +138,10 @@ function isValidNumber(req, res, next){
   next();
 }
 
+// ^ VALIDATOR FUNCTIONS ^
+
+// v FETCH FUNCTIONS v
+
 async function list(req, res) {
  // const mobile_number = req.query.mobile_number;
 /*   const data = await (
@@ -131,6 +154,12 @@ async function list(req, res) {
   res.json({
     data: await service.list(req.query.date)
   });
+}
+
+// retrieves all reservations for creating a new reservation
+async function listAll(req, res){
+  data = await service.listAll();
+  res.json({data});
 }
 
 async function create(req, res) {
@@ -172,6 +201,10 @@ async function update(req, res) {
   res.json({ data });
 }
 
+// ^ FETCH FUNCTIONS ^
+
+// v VALIDATORS v
+
 const has_first_name = bodyDataHas("first_name");
 const has_last_name = bodyDataHas("last_name");
 const has_mobile_number = bodyDataHas("mobile_number");
@@ -181,6 +214,8 @@ const has_people = bodyDataHas("people");
 const has_capacity = bodyDataHas("capacity");
 const has_table_name = bodyDataHas("table_name");
 const has_reservation_id = bodyDataHas("reservation_id");
+
+// ^ VALIDATORS ^
 
 module.exports = {
   create: [
@@ -193,12 +228,14 @@ module.exports = {
       has_people,
       isValidDate,
       isTime,
+      isValidTime,
       isValidNumber,
       checkStatus,
       asyncErrorBoundary(create)
   ],
   read: [hasReservationId, reservationExists, asyncErrorBoundary(read)],
   list: [asyncErrorBoundary(list)],
+  listAll,
   reservationExists: [hasReservationId, reservationExists],
   status: [hasReservationId, reservationExists, unfinishedStatus, asyncErrorBoundary(status)],
   update: [

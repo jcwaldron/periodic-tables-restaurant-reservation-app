@@ -5,7 +5,6 @@ import ErrorAlert from "../layout/ErrorAlert";
 const { REACT_APP_API_BASE_URL } = process.env;
 
 
-
 function NewReservation(){
   const history = useHistory();
   const [error, setError] = useState(null);
@@ -38,41 +37,41 @@ function NewReservation(){
     const [formData, setFormData] = useState(initialFormData);
 
     function handleInput(event) {
-      setFormData({
-        ...formData,
-        [event.target.name]: event.target.value
-      });
+      const { name, value } = event.target;
+    
+      // Parse the "people" value to a number if the field name is "people"
+      const parsedValue = name === "people" ? parseInt(value, 10) : value;
+    
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: parsedValue,
+      }));
     }
+    
   
     async function handleFormSubmit(event) {
       event.preventDefault();
-      
-      const reservationDate = new Date(`${formData.reservation_date}T00:00:00`);
-      const today = new Date();
+      const numberOfPeople = parseInt(formData.people, 10);
 
-      // Check if the reservation date is a Tuesday
-      if (reservationDate.getDay() === 2) {
-        const error = { message: "The restaurant is closed on Tuesdays. Please choose another date." };
-        setError(error); 
-        console.log(error)
-        return;
-      }
+      // Combine date and time to form a complete datetime string
+      const completeDateTime = `${formData.reservation_date}T${formData.reservation_time}:00.000Z`;
 
-      
-      // Check if the reservation date is in the past
-      if (reservationDate < today) {
-        const error = { message: "Reservation date cannot be in the past. Please choose a future date." };
-        setError(error); 
-        return;
-      }
-    
       try {
-        const response = await fetch(`${REACT_APP_API_BASE_URL}/reservations`, {
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/reservations/new`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            data: {
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              mobile_number: formData.mobile_number,
+              reservation_date: completeDateTime,
+              reservation_time: formData.reservation_time,
+              people: numberOfPeople, // Use the parsed value
+            },
+          }),
         });
     
         if (response.ok) {
@@ -81,23 +80,28 @@ function NewReservation(){
           // Update UI or perform any necessary actions
           console.log("Reservation created:", newReservation);
           setFormData(initialFormData); // Reset the form after successful submission
-
+    
           history.push("/dashboard");
         } else {
           // Handle error
-          console.log("Error creating reservation");
+          try {
+            const errorData = await response.json();
+            setError(errorData.message);
+          } catch (error) {
+            setError("An error occurred while processing the request.");
+          }
         }
       } catch (error) {
         // Handle network or other errors
-        console.log("Error:", error.message);
+        setError(error.message);
       }
     }
+    
 
 // Event handler for the "Cancel" button
   function handleCancel() {
     history.push("/dashboard");
   }
-    
 
     return (
         <main>
@@ -122,19 +126,21 @@ function NewReservation(){
              <input id="reservation_time" name="reservation_time" type="time" placeholder="HH:MM" pattern="[0-9]{2}:[0-9]{2}" required={true} onChange={handleInput} />
             </td>
             <td id="peopleId">
-             <input id="people" name="people" placeholder="number of guests" required={true} onChange={handleInput} />
+             <input id="people" name="people" type="number" placeholder="number of guests" required={true} onChange={handleInput} />
             </td>
             <td id="submBtnID">
               <button type="submit">Create</button>
             </td>
+            <td id="cancelBtnID">
+              <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
+            </td>
           </tr>
+
         </tbody>
       </table>
     </form>
-    <td id="cancelBtnID">
-              <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
-            </td>
-            <ErrorAlert error={error} />
+
+            {error && <ErrorAlert error={error} />}
         </main>
     )
 }
