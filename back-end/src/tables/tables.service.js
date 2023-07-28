@@ -5,6 +5,7 @@ const tableName = "tables";
 function list() {
   return knex(tableName)
     .select("*")
+    .orderBy("table_name")
 }
 
 function create(table) {
