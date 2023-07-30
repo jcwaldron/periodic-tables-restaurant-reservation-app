@@ -13,11 +13,26 @@
 
 .tablesSection {
   flex-direction: column;
-  margin-left: 30px;
 }
 
 .indTable {
   margin-bottom: 15px;
   border: 1px solid powderblue;
   padding: 10px
+}
+
+.nameSection {
+  margin: 3px;
+}
+
+#reservationsSection {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: 30px;
+}
+
+#first_name, #last_name, 
+#mobileId, #reservation_date, #reservation_time, 
+#people, #subBtn, #canBtn {
+  margin: 3px;
 }

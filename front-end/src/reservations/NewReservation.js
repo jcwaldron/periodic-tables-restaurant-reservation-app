@@ -104,42 +104,28 @@ function NewReservation(){
   }
 
     return (
-        <main>
-
-    <form name="create" onSubmit={handleFormSubmit}>
-      <table>
-        <tbody>
-          <tr>
-            <td id="first_nameId">
+      <main>
+          <h2>Create Reservation</h2>
+          <form name="createReservation" onSubmit={handleFormSubmit}>
+            <div id="nameId">
               <input id="first_name" name="first_name" required={true} placeholder="First Name" onChange={handleInput} />
-            </td>
-            <td id="last_nameId">
-             <input id="last_name" name="last_name" required={true} placeholder="Last Name" onChange={handleInput} />
-            </td>
-            <td id="mobileId">
-             <input id="mobile_number" name="mobile_number" required={true} placeholder="Mobile number" onChange={handleInput} />
-            </td>
-            <td id="dateId">
-             <input id="reservation_date" name="reservation_date" type="date" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" required={true} onChange={handleInput} />
-            </td>
-            <td id="timeId">
-             <input id="reservation_time" name="reservation_time" type="time" placeholder="HH:MM" pattern="[0-9]{2}:[0-9]{2}" required={true} onChange={handleInput} />
-            </td>
-            <td id="peopleId">
-             <input id="people" name="people" type="number" placeholder="number of guests" required={true} onChange={handleInput} />
-            </td>
-            <td id="submBtnID">
-              <button type="submit">Create</button>
-            </td>
-            <td id="cancelBtnID">
-              <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </form>
-
+              <input id="last_name" name="last_name" required={true} placeholder="Last Name" onChange={handleInput} />
+            </div>
+            <div id="mobileId">
+               <input id="mobile{data}_number" name="mobile_number" required={true} placeholder="Mobile number" onChange={handleInput} />
+            </div>
+            <div id="dateTimeId">
+              <input id="reservation_date" name="reservation_date" type="date" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" required={true} onChange={handleInput} />
+              <input id="reservation_time" name="reservation_time" type="time" placeholder="HH:MM" pattern="[0-9]{2}:[0-9]{2}" required={true} onChange={handleInput} />
+            </div>
+            <div id="peopleId">
+              <input id="people" name="people" type="number" placeholder="number of guests" required={true} onChange={handleInput} />
+            </div>
+            <div id="submitCancelId">
+              <button id="subBtn" type="submit">Create</button>
+              <button id="canBtn" type="cancel" onClick={() => handleCancel()}>Cancel</button>
+            </div>
+          </form>
             {error && <ErrorAlert error={error} />}
         </main>
     )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { listReservations } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
@@ -12,7 +12,11 @@ const { REACT_APP_API_BASE_URL } = process.env;
  * @returns {JSX.Element}
  */
 
-function Dashboard({today}) {
+function Dashboard({today,
+    reservations, setReservations,
+    reservationsError, setReservationsError,
+    tables, setTables
+}) {
   const query = useQuery();
   let date = query.get("date");
  
@@ -20,10 +24,6 @@ function Dashboard({today}) {
   if (!date){
     date = today;
   }
-
-  // state holders for reservations and errors
-  const [reservations, setReservations] = useState([]);
-  const [reservationsError, setReservationsError] = useState(null);
 
   // load dashboard based on date
   useEffect(loadDashboard, [date]);
@@ -65,38 +65,6 @@ function Dashboard({today}) {
 
     )
   })
-
-// tables state holder
-const [tables, setTables] = useState([]);
-
-// load tables table
-useEffect(() => {
-  const fetchTables = async () => {
-  try {
-    const response = await fetch(`${REACT_APP_API_BASE_URL}/tables`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    });  
-    
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const tablesData = await response.json();
-    return tablesData; // Return the fetched data
-    
-  } catch (error) {
-    console.log("Error fetching data:", error);
-    return error; // Return an empty array in case of error
-  }
-};
-
-fetchTables()
-  .then(({data}) => setTables(data)) // setTables with the fetched data
-  .catch((error) => console.error("Error setting tables:", error));
-}, []);
 
 // create display for tables
   const listOfTables = tables.map(({table_name, table_id, capacity, reservation_id}) => {
