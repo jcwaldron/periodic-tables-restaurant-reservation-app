@@ -37,6 +37,18 @@ function Dashboard({today,
       .catch(setReservationsError);
     return () => abortController.abort();
   }
+  
+  // a function to reload the tables
+  function loadTables() {
+    fetch(`${REACT_APP_API_BASE_URL}/tables`)
+      .then(({response}) => response.json())
+      .then((data)=>{
+        setTables(data);
+      })
+      .catch((error) => {
+        console.error("Error loading tables data:", error.message);
+      });
+  }
 
   // Helper function to add or subtract days from a date
   function addDays(date, days) {
@@ -66,6 +78,26 @@ function Dashboard({today,
     )
   })
 
+  // Function to handle table finish confirmation
+  function handleFinishConfirmation(table_id) {
+    if (window.confirm("Is this table ready to seat new guests? This cannot be undone.")) {
+      // Send a DELETE request to remove the table assignment
+      fetch(`${REACT_APP_API_BASE_URL}/tables/${table_id}/seat`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Table is not occupied.");
+          }
+          // Refresh the list of tables after successful deletion
+          loadTables();
+        })
+        .catch((error) => {
+          console.error("Error removing table assignment:", error.message);
+        });
+    }
+  }
+
 // create display for tables
   const listOfTables = tables.map(({table_name, table_id, capacity, reservation_id}) => {
 
@@ -74,7 +106,10 @@ function Dashboard({today,
       if (reservation_id) {
         // If a reservation is seated at the table
         return (
-          <div data-table-id-status={table_id} className="occupied">Occupied</div>
+          <div>
+            <div data-table-id-status={table_id} className="occupied">Occupied</div>
+            <button data-table-id-finish={table.table_id} className="mt-1" onClick={() => handleFinishConfirmation(table_id)}>Finish</button>
+          </div>
         );
       } else {
         // If no reservation is seated at the table
@@ -93,7 +128,8 @@ function Dashboard({today,
          </div>
 
     )
-  });
+  }) 
+
 
   return (
     <main>

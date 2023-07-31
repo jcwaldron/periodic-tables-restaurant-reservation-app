@@ -24,19 +24,24 @@ function isValidLength(req, res, next){
 }
 
 // checks if the table being looked up
-function tableExists(req, res, next){
+async function tableExists(req, res, next) {
   const { table_id } = req.params;
-  
-  if (table_id){
-    res.locals.table_id = table_id;
-    next();
-  } else {
-    next({
-        status: 400,
-        message: `missing table_id`,
-    });
+  try {
+    const table = await service.read(table_id);
+    if (table) {
+      res.locals.table_id = table_id;
+      return next();
+    } else {
+      return next({
+        status: 404,
+        message: `Table with id ${table_id} not found.`,
+      });
+    }
+  } catch (error) {
+    return next(error);
   }
 }
+
 
 // validates whether properties are included
 function bodyDataHas(propertyName) {
@@ -84,6 +89,22 @@ async function isTableOccupied(req, res, next) {
   next();
 }
 
+// a validator for when the table is already empty
+async function isTableEmpty(req, res, next) {
+  const { table_id } = res.locals;
+  const table = await service.read(table_id); // Read the table from the database
+
+  if (!table || !table.reservation_id) {
+    return next({
+      status: 400,
+      message: `Table is not occupied.`,
+    });
+  }
+
+  next();
+}
+
+
 
 
 // v FETCH FUNCTIONS v
@@ -120,6 +141,12 @@ async function create(req, res) {
   res.json({ data });
 }
 
+async function emptyTable(req, res, next){
+  const { table_id } = res.locals;
+  const data = await service.emptyTable(table_id);
+  res.status(200).json({data})
+}
+
 // v ADDITIONAL VALIDATORS v
  const has_table_name = bodyDataHas("table_name")
  const has_capacity = bodyDataHas("capacity")
@@ -129,5 +156,6 @@ async function create(req, res) {
     list: [asyncErrorBoundary(list)], 
     create: [has_table_name, has_capacity, isValidLength, isValidNumber, asyncErrorBoundary(create)],
     update: [tableExists, has_reservation_id, reservationExists, isValidCapacity, isTableOccupied, asyncErrorBoundary(update)],
-    read
+    read,
+    delete: [tableExists, isTableEmpty, emptyTable]
    }
