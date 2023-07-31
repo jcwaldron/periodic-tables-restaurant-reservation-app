@@ -22,13 +22,13 @@ function Routes() {
   // state holders for reservations and errors
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
+  const [error, setError] = useState();
   
   // tables state holder
   const [tables, setTables] = useState([]);
 
   // load tables table
-  useEffect(() => {
-    const fetchTables = async () => {
+  async function fetchTables() {
     try {
       const response = await fetch(`${REACT_APP_API_BASE_URL}/tables`, {
         method: "GET",
@@ -50,10 +50,12 @@ function Routes() {
     }
   };
 
+  useEffect(() => {
   fetchTables()
-    .then(({data}) => setTables(data)) // setTables with the fetched data
+    .then(({data}) => setTables(data))
     .catch((error) => console.error("Error setting tables:", error));
   }, []);
+  
 
   // ROUTES
   return (
@@ -71,6 +73,9 @@ function Routes() {
           reservationsError={reservationsError}
           setReservationsError={setReservationsError} 
           tables={tables} setTables={setTables}
+          fetchTables={fetchTables}
+          error={error}
+          setError={setError}
           />
       </Route>
       <Route exact={true} path="/reservations/new">
@@ -83,7 +88,11 @@ function Routes() {
         <Seat        
         reservations={reservations} 
         setReservations={setReservations}
-        tables={tables} setTables={setTables}/>
+        tables={tables} setTables={setTables}
+        fetchTables={fetchTables}
+        error={error}
+        setError={setError}
+        />
       </Route>
       <Route>
         <NotFound />

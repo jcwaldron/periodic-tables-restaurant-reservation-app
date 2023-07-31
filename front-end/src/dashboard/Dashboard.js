@@ -15,7 +15,7 @@ const { REACT_APP_API_BASE_URL } = process.env;
 function Dashboard({today,
     reservations, setReservations,
     reservationsError, setReservationsError,
-    tables, setTables
+    tables, setTables, fetchTables, error, setError
 }) {
   const query = useQuery();
   let date = query.get("date");
@@ -26,7 +26,7 @@ function Dashboard({today,
   }
 
   // load dashboard based on date
-  useEffect(loadDashboard, [date]);
+  useEffect(loadDashboard, [date, setReservations, setReservationsError]);
 
   // fetch reservations for queried date
   function loadDashboard() {
@@ -36,20 +36,24 @@ function Dashboard({today,
       .then(setReservations)
       .catch(setReservationsError);
     return () => abortController.abort();
+  };
+
+  // fetch tables
+
+  async function fetchTables() {
+    try {
+      const response = await fetch(`${REACT_APP_API_BASE_URL}/tables`);
+      const {data} = await response.json();
+      setTables(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching tables:", error.message);
+      setError("Error fetching tables.");
+      return [];
+    }
   }
   
-  // a function to reload the tables
-  function loadTables() {
-    fetch(`${REACT_APP_API_BASE_URL}/tables`)
-      .then(({response}) => response.json())
-      .then((data)=>{
-        setTables(data);
-      })
-      .catch((error) => {
-        console.error("Error loading tables data:", error.message);
-      });
-  }
-
+  
   // Helper function to add or subtract days from a date
   function addDays(date, days) {
     const newDate = new Date(date);
@@ -58,9 +62,12 @@ function Dashboard({today,
   }
 
   // create display for reservations
-  const listOfReservations = reservations.map(({
-      reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people
+  const listOfReservations = reservations.map(( {
+      reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people, status
   })=>{
+
+    if (status === "booked" || status === "seated"){
+
     return (
 
         <div key={reservation_id} className="mr-4"> 
@@ -70,33 +77,91 @@ function Dashboard({today,
           <div>Time: {reservation_time}</div>
           <div>Mobile: {mobile_number}</div>
           <div>Party: {people}</div>
+          <div data-reservation-id-status={reservation_id}>Status: {status}</div>
           <div>
-            <Link to={`/reservations/${reservation_id}/seat`} className="btn btn-primary mr-1 mt-1">Seat</Link>
+            { status === "booked" && 
+            <Link to={`/reservations/${reservation_id}/seat`} className="btn btn-primary mr-1 mt-1">
+              Seat
+            </Link>}
           </div>
         </div>
 
     )
+    }
   })
 
-  // Function to handle table finish confirmation
-  function handleFinishConfirmation(table_id) {
-    if (window.confirm("Is this table ready to seat new guests? This cannot be undone.")) {
-      // Send a DELETE request to remove the table assignment
-      fetch(`${REACT_APP_API_BASE_URL}/tables/${table_id}/seat`, {
-        method: "DELETE",
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Table is not occupied.");
-          }
-          // Refresh the list of tables after successful deletion
-          loadTables();
-        })
-        .catch((error) => {
-          console.error("Error removing table assignment:", error.message);
+    // changes reservation status from seated to finished
+  async function finishedStatus(reservationId){
+
+    try {
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/reservations/${reservationId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              status: "finished"
+            },
+          }),
         });
+
+        const {data} = await listReservations();
+        setReservations(data);
+    
+        if (response.ok) {
+          // Handle success
+          const finishedReservation = await response.json();
+          // Update UI or perform any necessary actions
+          console.log("Reservation finished:", finishedReservation);       
+          
+        } else {
+          // Handle error
+          try {
+            const errorData = await response.json();
+            setError(errorData.message);
+          } catch (error) {
+            setError("An error occurred while processing the request.");
+          }
+        }
+      } catch (error) {
+        // Handle network or other errors
+        setError(error.message);
+      }
+}
+
+// Function to handle table finish confirmation
+async function handleFinishConfirmation(table_id) {
+  if (window.confirm("Is this table ready to seat new guests? This cannot be undone.")) {
+    try {
+      // Send a DELETE request to remove the table assignment
+      const response = await fetch(`${REACT_APP_API_BASE_URL}/tables/${table_id}/seat`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Table is not occupied.");
+      }
+
+      // Call finishedStatus here with the reservation_id as an argument
+      const reservation_id = tables.find((table) => table.table_id === table_id)?.reservation_id;
+      console.log("Found Reservation ID:", reservation_id); // Debugging statement
+      if (reservation_id) {
+        await finishedStatus(reservation_id);
+      }
+
+      // Fetch the updated table data
+      await fetchTables();
+      loadDashboard();
+      console.log("Table unseated successfully.");
+    } catch (error) {
+      console.error("Error removing table assignment:", error.message);
     }
   }
+}
+
+
+
 
 // create display for tables
   const listOfTables = tables.map(({table_name, table_id, capacity, reservation_id}) => {

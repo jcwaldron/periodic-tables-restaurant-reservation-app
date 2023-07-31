@@ -237,7 +237,7 @@ module.exports = {
   list: [asyncErrorBoundary(list)],
   listAll,
   reservationExists: [hasReservationId, reservationExists],
-  status: [hasReservationId, reservationExists, unfinishedStatus, asyncErrorBoundary(status)],
+  status: [hasReservationId, reservationExists, /* unfinishedStatus, */ asyncErrorBoundary(status)],
   update: [
       hasValidFields,
       has_first_name,

@@ -32,6 +32,7 @@ router
 
 router
     .route("/:reservation_id/seat")
+    .put(controller.update)
     .all(methodNotAllowed);
 
 module.exports = router;
