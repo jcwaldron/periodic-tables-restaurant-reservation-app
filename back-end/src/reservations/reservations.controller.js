@@ -96,22 +96,25 @@ function isValidDate(req, res, next){
   next();
 }
 
-function isValidTime(req, res, next){
+function isValidTime(req, res, next) {
   const { data = {} } = req.body;
   const reservation_date = new Date(data['reservation_date']);
-  const reservationHour = reservation_date.getUTCHours();
-  const reservationMinutes = reservation_date.getUTCMinutes();
 
-  if (reservationHour <= 10 && reservationMinutes < 30) {
-    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM."})
+  // Convert to local time
+  const reservationHour = reservation_date.getHours();
+  const reservationMinutes = reservation_date.getMinutes();
+
+  if (reservationHour < 10 || (reservationHour === 10 && reservationMinutes < 30)) {
+    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM." });
   }
 
-  if (reservationHour >= 21 && reservationMinutes > 30) {
-    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM."})
+  if (reservationHour >= 21 || (reservationHour === 21 && reservationMinutes > 30)) {
+    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM." });
   }
 
   next();
 }
+
 
 function isTime(req, res, next){
   const { data = {} } = req.body;
@@ -183,16 +186,17 @@ async function status(req, res) {
   res.json({ data });
 }
 
-async function unfinishedStatus(req, res, next){
-  if ("booked" !== res.locals.reservation.status) {
+async function unfinishedStatus(req, res, next) {
+  if (res.locals.reservation && res.locals.reservation.status === "finished") {
     next({
       status: 400,
       message: `Reservation status: '${res.locals.reservation.status}'.`,
     });
   } else {
-      next();
+    next();
   }
 }
+
 
 async function update(req, res) {
   const { reservation_id } = res.locals.reservation;
@@ -225,19 +229,20 @@ module.exports = {
       has_mobile_number,
       has_reservation_date,
       has_reservation_time,
+      checkStatus,
+      unfinishedStatus,
       has_people,
       isValidDate,
       isTime,
       isValidTime,
       isValidNumber,
-      checkStatus,
       asyncErrorBoundary(create)
   ],
   read: [hasReservationId, reservationExists, asyncErrorBoundary(read)],
   list: [asyncErrorBoundary(list)],
   listAll,
   reservationExists: [hasReservationId, reservationExists],
-  status: [hasReservationId, reservationExists, /* unfinishedStatus, */ asyncErrorBoundary(status)],
+  status: [hasReservationId, reservationExists, unfinishedStatus, asyncErrorBoundary(status)],
   update: [
       hasValidFields,
       has_first_name,
@@ -251,6 +256,7 @@ module.exports = {
       isValidNumber,
       checkStatus,
       hasReservationId,
+      checkStatus,
       reservationExists,
       asyncErrorBoundary(update)
   ]

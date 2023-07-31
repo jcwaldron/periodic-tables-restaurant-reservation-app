@@ -6,7 +6,7 @@ function list(date) {
   return knex(tableName)
     .select("*")
     .where({reservation_date: date})
- //   .whereNotIn("status", ["finished", "cancelled"])
+    .whereNotIn("status", ["finished", "cancelled"])
     .orderBy("reservation_time", "asc");
 }
 
@@ -35,10 +35,19 @@ function update(reservation) {
     .then((records) => records[0]);
 }
 
-function status(reservation) {
-    update(reservation);
-    return validStatus(reservation);
+function updateStatus(reservation_id, status) {
+  return knex(tableName)
+    .where({ reservation_id })
+    .update({ status }, "*")
+    .then((records) => records[0]);
 }
+
+
+async function status(reservation) {
+  await updateStatus(reservation.reservation_id, reservation.status);
+  return validStatus(reservation);
+}
+
 
 function validStatus(reservation) {
   if (["booked", "seated", "finished", "cancelled"].includes(reservation.status)) {

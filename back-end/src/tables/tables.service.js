@@ -31,7 +31,19 @@ function emptyTable(table_id) {
   .update({reservation_id: null});
 }
 
+function getReservationStatus({ reservation_id }) {
+	return knex('reservations')
+		.select('status')
+		.where({ reservation_id })
+		.first()		
+}
+
+function updateReservationStatus({ reservation_id, status }) {
+	return knex('reservations')
+		.where({ reservation_id })
+		.update({ status })
+}
 
 module.exports = {
-    list, create, update, read, emptyTable
+    list, create, update, read, emptyTable, updateReservationStatus, getReservationStatus
 }
