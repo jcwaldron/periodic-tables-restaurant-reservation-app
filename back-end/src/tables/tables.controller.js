@@ -85,6 +85,8 @@ async function isTableOccupied(req, res, next) {
       status: 400,
       message: `Cannot seat reservation. The table is already occupied.`,
     });
+  } else {
+    res.status(200).json({})
   }
 
   next();
