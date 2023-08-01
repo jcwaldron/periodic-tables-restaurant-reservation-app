@@ -1,5 +1,7 @@
 const knex = require("../db/connection");
+
 const tableName = "reservations";
+
 function list(date) {
   return knex(tableName)
     .select("*")
@@ -13,16 +15,19 @@ function listAll(){
     return knex(tableName)
         .select("*")
 }
+
 function create(reservation) {
   return knex(tableName)
     .insert(reservation, "*")
     .then((createdReservations) => createdReservations[0]);
 }
+
 function read(reservation_id){
     return knex(tableName)
       .where({reservation_id: reservation_id})
       .first();
 }
+
 function update(reservation) {
   return knex(tableName)
     .where({ reservation_id: reservation.reservation_id })
@@ -30,19 +35,10 @@ function update(reservation) {
     .then((records) => records[0]);
 }
 
-function updateStatus(reservation_id, status) {
-  return knex(tableName)
-    .where({ reservation_id })
-    .update({ status }, "*")
-    .then((records) => records[0]);
+function status(reservation) {
+    update(reservation);
+    return validStatus(reservation);
 }
-
-
-async function status(reservation) {
-  await updateStatus(reservation.reservation_id, reservation.status);
-  return validStatus(reservation);
-}
-
 
 function validStatus(reservation) {
   if (["booked", "seated", "finished", "cancelled"].includes(reservation.status)) {
@@ -54,6 +50,7 @@ function validStatus(reservation) {
   error.status = 400;
   throw error;
 }
+
 function search(mobile_number) {
   return knex(tableName)
     .whereRaw(
@@ -62,6 +59,7 @@ function search(mobile_number) {
     )
     .orderBy("reservation_date");
 }
+
 module.exports = {
   create,
   list,

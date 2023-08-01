@@ -81,13 +81,14 @@ async function isTableOccupied(req, res, next) {
 // a validator for when the table is already empty
 async function isTableEmpty(req, res, next) {
   const { table_id } = res.locals;
-  const table = await service.read(table_id); // Read the table from the database
+  const table = await service.read(table_id); 
+
   if (!table || !table.reservation_id) {
     return next({
       status: 400,
       message: `Table is not occupied.`,
     });
-  }
+  } 
   next();
 }
 
@@ -115,15 +116,7 @@ async function create(req, res) {
     });
  }
 
-/* const reservation_id = knex(tableName).where({table_id}).get({reservation_id}) // not sure if this is the correct syntax to get the value of a field.
-const status = knex('reservations').where({reservation_id}).get({status});
-if (status === 'seated') {
-return 400 // not sure how you would do this with knex
-}
-knex('reservations').where({reservation_id}).update({status: 'seated'});
-return //what you already have here for the table update. */
-
-async function update(req, res, next) {
+ async function update(req, res, next) {
 	try {
 		const { table_id } = res.locals;
 		const { reservation_id } = req.body.data; // Get reservation_id and people from the request body
@@ -136,27 +129,32 @@ async function update(req, res, next) {
 		const data = await service.update({ table_id, reservation_id }); // Pass both table_id and reservation_id to the service
 		await service.updateReservationStatus({ reservation_id, status: 'seated' });
 
-		res.status(200).json({data});
+		res.status(200).json({});
 	} catch (err) {
-		console.error(err);
 		res.status(400).json({ error: err.message})
 	}
 }
 
 async function emptyTable(req, res) {
-	const { table_id } = res.locals;
-	const { reservation_id } = req.body.data; // Get reservation_id and people from the request body
-  console.log("*****************", table_id)
-	const data = await service.emptyTable( table_id );
-	await service.updateReservationStatus({ reservation_id, status: 'finished' });
+  const { table_id } = res.locals;
+  const { reservation_id } = req.body.data || {}; // Use empty object as default if data is missing
 
-  res.status(200).json({})
+  if (reservation_id) {
+    await service.updateReservationStatus({ reservation_id, status: 'finished' });
+  }
+
+  const data = await service.emptyTable(table_id);
+
+  res.status(200).json();
 }
+
 
 // v ADDITIONAL VALIDATORS v
  const has_table_name = bodyDataHas("table_name")
  const has_capacity = bodyDataHas("capacity")
  const has_reservation_id = bodyDataHas("reservation_id")
+
+
    module.exports = {
     list: [asyncErrorBoundary(list)], 
     create: [has_table_name, has_capacity, isValidLength, isValidNumber, asyncErrorBoundary(create)],

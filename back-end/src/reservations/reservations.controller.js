@@ -86,23 +86,41 @@ function isValidDate(req, res, next){
 }
 
 function isValidTime(req, res, next) {
-  const { data = {} } = req.body;
-  const reservation_date = new Date(data['reservation_date']);
+	const { reservation_date, reservation_time } = req.body.data;
 
-  // Convert to local time
-  const reservationHour = reservation_date.getHours();
-  const reservationMinutes = reservation_date.getMinutes();
+	const date = new Date(`${reservation_date} ${reservation_time}`);
 
-  if (reservationHour < 10 || (reservationHour === 10 && reservationMinutes < 30)) {
-    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM." });
-  }
+	const dateUTC = Date.UTC(
+		date.getUTCFullYear(),
+		date.getUTCMonth(),
+		date.getUTCDate(),
+		date.getUTCHours(),
+		date.getUTCMinutes(),
+		date.getUTCSeconds(),
+	);
 
-  if (reservationHour >= 21 || (reservationHour === 21 && reservationMinutes > 30)) {
-    return next({ status: 400, message: "Reservation time must be between 10:30 AM and 9:30 PM." });
-  }
+	if (
+		date.getHours() < 10 ||
+		(date.getHours() === 10 && date.getMinutes() < 30)
+	) {
+		return next({
+			status: 400,
+			message: "The earliest reservation time is 10:30am",
+		});
+	}
 
-  next();
+	if (
+		date.getHours() > 21 ||
+		(date.getHours() === 21 && date.getMinutes() > 30)
+	) {
+		return next({
+			status: 400,
+			message: "The latest reservation time is 9:30pm",
+		});
+	}
+	next();
 }
+
 
 
 function isTime(req, res, next){
@@ -113,6 +131,7 @@ function isTime(req, res, next){
   }
   next({ status: 400, message: `Invalid reservation_time` });
 }
+
 function checkStatus(req, res, next){
   const { data = {} } = req.body;
   if (data['status'] === 'seated' || data['status'] === 'finished'){
@@ -120,6 +139,7 @@ function checkStatus(req, res, next){
   }
   next();
 }
+
 function isValidNumber(req, res, next){
   const { data = {} } = req.body;
   if (data['people'] === 0 || !Number.isInteger(data['people'])){
@@ -128,6 +148,7 @@ function isValidNumber(req, res, next){
   next();
 }
 // ^ VALIDATOR FUNCTIONS ^
+
 // v FETCH FUNCTIONS v
 async function list(req, res) {
  // const mobile_number = req.query.mobile_number;
@@ -142,6 +163,7 @@ async function list(req, res) {
     data: await service.list(req.query.date)
   });
 }
+
 // retrieves all reservations for creating a new reservation
 async function listAll(req, res){
   data = await service.listAll();
@@ -176,14 +198,15 @@ async function unfinishedStatus(req, res, next) {
   }
 }
 
-
 async function update(req, res) {
   const { reservation_id } = res.locals.reservation;
   req.body.data.reservation_id = reservation_id;
   const data = await service.status(req.body.data);
   res.json({ data });
 }
+
 // ^ FETCH FUNCTIONS ^
+
 // v VALIDATORS v
 const has_first_name = bodyDataHas("first_name");
 const has_last_name = bodyDataHas("last_name");
@@ -194,7 +217,9 @@ const has_people = bodyDataHas("people");
 const has_capacity = bodyDataHas("capacity");
 const has_table_name = bodyDataHas("table_name");
 const has_reservation_id = bodyDataHas("reservation_id");
+
 // ^ VALIDATORS ^
+
 module.exports = {
   create: [
       hasValidFields,
