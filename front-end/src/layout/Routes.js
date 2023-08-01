@@ -23,7 +23,7 @@ function Routes() {
   // state holders for reservations and errors
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
-  const [error, setError] = useState();
+  const [error, setError] = useState(null);
   
   // tables state holder
   const [tables, setTables] = useState([]);
@@ -96,7 +96,12 @@ function Routes() {
         />
       </Route>
       <Route exact={true} path="/search">
-        <Search />
+        <Search 
+            error={error}
+            setError={setError}
+            reservations={reservations}
+            setReservations={setReservations}
+                />
       </Route>
       <Route>
         <NotFound />

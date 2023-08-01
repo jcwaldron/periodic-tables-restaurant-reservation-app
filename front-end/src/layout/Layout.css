@@ -36,3 +36,11 @@
 #people, #subBtn, #canBtn {
   margin: 3px;
 }
+
+.formInput {
+  width: 50%;
+}
+
+.buttonBox {
+  display: flex;
+}

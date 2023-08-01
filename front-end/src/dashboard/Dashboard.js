@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { listReservations } from "../utils/api";
+import ReservationsList from "../reservations/ReservationList";
 import ErrorAlert from "../layout/ErrorAlert";
 import useQuery from "../utils/useQuery";
 const { REACT_APP_API_BASE_URL } = process.env;
@@ -61,12 +62,10 @@ function Dashboard({today,
     return newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
   }
 
-  // create display for reservations
+/*   // create display for reservations
   const listOfReservations = reservations.map(( {
       reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people, status
   })=>{
-
-    if (status === "booked" || status === "seated"){
 
     return (
 
@@ -88,7 +87,7 @@ function Dashboard({today,
 
     )
     }
-  })
+  ) */
 
     // changes reservation status from seated to finished
   async function finishedStatus(reservationId){
@@ -216,7 +215,7 @@ async function handleFinishConfirmation(table_id) {
       </div>
       <div className="d-md-flex mb-3">
         <div id="reservationsSection" className="d-md-flex mb-3">
-          {listOfReservations}
+          <ReservationsList reservations={reservations}/>
         </div>
         <div className="tablesSection">
           <h4>Tables</h4>

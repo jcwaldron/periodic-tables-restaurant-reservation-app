@@ -77,29 +77,31 @@ function NewTable() {
 
     return (
         <main>
-            <h1>Create Table</h1>
+          {error && <ErrorAlert error={error} />}
+            <h3>Create Table</h3>
             <form name="create" onSubmit={handleFormSubmit}>
-      <table>
-        <tbody>
-          <tr>
-            <td id="table_nameId">
-              <input id="table_name" name="table_name" required={true} placeholder="Table Name" onChange={handleInput} />
-            </td>
-            <td id="capacityId">
-             <input id="capacity" name="capacity" required={true} type="number" placeholder="Capacity" onChange={handleInput} />
-            </td>
-            <td id="submBtnID">
-              <button type="submit">Create</button>
-            </td>
-            <td id="cancelBtnID">
-              <button type="cancel" onClick={() => handleCancel()}>Cancel</button>
-            </td>
-          </tr>
+      <div>
+        <div>
+          <div>
+            <div id="table_nameId">
+              <input id="table_name" className="formInput" name="table_name" required={true} placeholder="Table Name" onChange={handleInput} />
+            </div>
+            <div id="capacityId">
+             <input id="capacity" name="capacity" className="formInput mt-1" required={true} type="number" placeholder="Capacity" onChange={handleInput} />
+            </div>
+            <div className="buttonBox">
+              <div id="submBtnID">
+                <button type="submit" className="btn btn-primary mt-1 mr-1">Create</button>
+              </div>
+              <div id="cancelBtnID">
+                <button type="cancel" className="btn btn-secondary mt-1" onClick={() => handleCancel()}>Cancel</button>
+              </div>
+            </div>
+          </div>
 
-        </tbody>
-      </table>
+        </div>
+      </div>
     </form>
-        {error && <ErrorAlert error={error} />}
         </main>
        
         );

@@ -1,56 +1,78 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
+import { listReservations } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
+import ReservationsList from "../reservations/ReservationList";
+
 
 const { REACT_APP_API_BASE_URL } = process.env;
 
-function Search() {
+function Search({
+  error, setError, reservations, setReservations
+}) {
     const history = useHistory();
-    const [mobileNumber, setMobileNumber] = useState("");
-    const [reservations, setReservations] = useState([]);
-    const [noReservationsFound, setNoReservationsFound] = useState(false);
+    const [display, setDisplay] = useState(false);
+    const [mobile, setMobile] = useState("");
   
     const handleInputChange = (event) => {
-      setMobileNumber(event.target.value);
+      setMobile(event.target.value);
     };
   
-    const handleSearch = async (event) => {
+
+    async function handleSearch(event) {
       event.preventDefault();
-  
-      // Remove all non-numeric characters from the mobile number
-      const formattedMobileNumber = mobileNumber.replace(/\D/g, "");
-  
+      const abortCont = new AbortController();
       try {
-        const response = await fetch(`/reservations?mobile_number=${formattedMobileNumber}`);
-        if (response.ok) {
-          const data = await response.json();
-          setReservations(data);
-          setNoReservationsFound(data.length === 0);
-        } else {
-          setReservations([]);
-          setNoReservationsFound(true);
-        }
+        const reservations = await listReservations(
+          { mobile_number: mobile },
+          abortCont.signal
+        );
+        setReservations(reservations);
+        setDisplay(true);
       } catch (error) {
-        console.error("Error occurred while searching:", error);
+        setError(error);
       }
-    };
+      return () => abortCont.abort();
+    }
   
     return (
-      <div>
-        <form onSubmit={handleSearch}>
-          <input
-            type="text"
-            name="mobile_number"
-            placeholder="Enter a customer's phone number"
-            value={mobileNumber}
-            onChange={handleInputChange}
-          />
-          <button type="submit">Find</button>
-        </form>
-        {noReservationsFound && <p>No reservations found</p>}
-        {/* Display the reservations using the same component as the /dashboard page */}
-        {/* Render the reservations list here */}
-      </div>
+      <>
+        <div className="d-flex pt-3">
+          <h3>Search</h3>
+        </div>
+        <ErrorAlert error={error} />
+        <div className="pt-3 pb-3">
+          <form className="formInput" onSubmit={handleSearch}>
+            <input
+              name="mobile_number"
+              id="mobile_number"
+              onChange={handleInputChange}
+              placeholder="Enter a customer's phone number"
+              value={mobile}
+              className="form-control"
+              required
+            />
+            <div className="pt-2">
+              <button type="submit" className="btn btn-primary">
+                Find
+              </button>
+            </div>
+          </form>
+        </div>
+        {display && (
+          <div>
+            {reservations.length ? (
+              <ReservationsList
+                reservations={reservations}
+                setReservations={setReservations}
+                setError={setError}
+              />
+            ) : (
+              <h3>No reservations found</h3>
+            )}
+          </div>
+        )}
+      </>
     );
 }
 
