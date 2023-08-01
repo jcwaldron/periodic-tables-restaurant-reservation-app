@@ -99,3 +99,15 @@ export async function modifyReservation(reservation_id, res, signal) {
   };
   return await fetchJson(url, options, []);
 }
+
+// updates reservation status for canceling
+export async function cancelReservation(reservation_id, signal){
+  const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}/status`)
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ status: "canceled" }),
+    signal,
+  };
+  return await fetchJson(url, options, []);
+}

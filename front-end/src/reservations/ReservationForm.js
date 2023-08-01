@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useHistory, useParams } from "react-router";
-import { modifyReservation, findReservation } from "../utils/api";
+import { cancelReservation, findReservation } from "../utils/api";
 
 function ReservationForm({
   initialformData,
@@ -14,7 +14,7 @@ function ReservationForm({
   const handleCancelReservation = async () => {
     const abortController = new AbortController();
     try {
-      await modifyReservation(reservation_id, { status: "cancelled" }, abortController.signal);
+      await cancelReservation(reservation_id, abortController.signal);
       // Refresh the reservation data
       const updatedReservation = await findReservation(reservation_id, abortController.signal);
       setReservationData(updatedReservation);
