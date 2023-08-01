@@ -79,3 +79,23 @@ export async function createReservation(reservation, signal) {
   };
   return await fetchJson(url, options, []);
 }
+
+//Finds reservation by id 
+export async function findReservation(reservation_id, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
+  return await fetchJson(url, { headers, signal }, [])
+    .then(formatReservationDate)
+    .then(formatReservationTime);
+}
+
+//Updates the new reservation information 
+export async function modifyReservation(reservation_id, res, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: res }),
+    signal,
+  };
+  return await fetchJson(url, options, []);
+}

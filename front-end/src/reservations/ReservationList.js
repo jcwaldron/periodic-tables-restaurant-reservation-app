@@ -21,6 +21,12 @@ function ReservationItem({ reservation }) {
             Seat
           </Link>
         )}
+        {status === "booked" || status === "seated" ? (
+          <Link to={`/reservations/${reservation_id}/edit`} className="btn btn-secondary mt-1">
+            Edit
+          </Link>
+        ) : null}
+
       </div>
     </div>
   );

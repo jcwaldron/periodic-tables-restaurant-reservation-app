@@ -38,7 +38,7 @@ export default function NewReservation({ reservations,
         formData,
         abortController.signal
       );
-      history.goBack();
+      history.push("/dashboard");
     } catch (error) {
       if (error.name !== "AbortError") {
         setReservationsError(error);

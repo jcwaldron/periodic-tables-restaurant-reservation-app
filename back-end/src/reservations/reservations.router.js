@@ -22,7 +22,7 @@ router
 router
     .route("/:reservation_id")
     .get(controller.read)
-    .put(controller.update)
+    .put(controller.status)
     .all(methodNotAllowed);
   
 router

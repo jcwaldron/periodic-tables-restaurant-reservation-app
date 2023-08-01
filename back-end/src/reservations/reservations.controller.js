@@ -281,7 +281,6 @@ module.exports = {
       isValidNumber,
       checkStatus,
       hasReservationId,
-      checkStatus,
       reservationExists,
       asyncErrorBoundary(update)
   ]

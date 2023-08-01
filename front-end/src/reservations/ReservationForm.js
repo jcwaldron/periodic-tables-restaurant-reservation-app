@@ -1,16 +1,35 @@
-import React from "react";
-import { useHistory } from "react-router";
+import React, { useState } from "react";
+import { useHistory, useParams } from "react-router";
+import { modifyReservation, findReservation } from "../utils/api";
 
 function ReservationForm({
   initialformData,
   handleFormChange,
-  handleSubmit,
+  handleSubmit, error, setError
 }) {
   const history = useHistory();
+  const {reservation_id} = useParams();
+  const [reservationData, setReservationData] = useState();
+
+  const handleCancelReservation = async () => {
+    const abortController = new AbortController();
+    try {
+      await modifyReservation(reservation_id, { status: "cancelled" }, abortController.signal);
+      // Refresh the reservation data
+      const updatedReservation = await findReservation(reservation_id, abortController.signal);
+      setReservationData(updatedReservation);
+    } catch (error) {
+      setError(error);
+    } finally {
+      abortController.abort();
+      history.push("/dashboard")
+    }
+  };
 
   const handleCancel = () => {
     history.goBack();
   };
+  
 
   return (
     initialformData && (
@@ -89,16 +108,23 @@ function ReservationForm({
           />
         </fieldset>
         <div className="d-flex pt-2">
-          <button type="submit" className="btn btn-primary mr-1">
+        <button type="submit" className="btn btn-primary mr-1">
             Submit
           </button>
-          <button
+          {!reservation_id && (
+            <button
             type="button"
             className="btn btn-secondary"
             onClick={handleCancel}
           >
             Cancel
           </button>
+          )}
+          {reservation_id && (
+            <button type="button" className="btn btn-danger" onClick={handleCancelReservation}>
+            Cancel Reservation
+            </button>
+          )}
         </div>
       </form>
     )

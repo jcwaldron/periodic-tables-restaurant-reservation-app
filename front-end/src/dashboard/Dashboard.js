@@ -62,33 +62,6 @@ function Dashboard({today,
     return newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
   }
 
-/*   // create display for reservations
-  const listOfReservations = reservations.map(( {
-      reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people, status
-  })=>{
-
-    return (
-
-        <div key={reservation_id} className="mr-4"> 
-          <div>Reservation ID: {reservation_id}</div>
-          <div>{first_name} {last_name}</div>
-          <div>Date: {reservation_date}</div>
-          <div>Time: {reservation_time}</div>
-          <div>Mobile: {mobile_number}</div>
-          <div>Party: {people}</div>
-          <div data-reservation-id-status={reservation_id}>Status: {status}</div>
-          <div>
-            { status === "booked" && 
-            <Link to={`/reservations/${reservation_id}/seat`} className="btn btn-primary mr-1 mt-1">
-              Seat
-            </Link>}
-          </div>
-        </div>
-
-    )
-    }
-  ) */
-
     // changes reservation status from seated to finished
   async function finishedStatus(reservationId){
 
