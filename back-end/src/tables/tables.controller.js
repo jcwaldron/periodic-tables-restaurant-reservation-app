@@ -100,6 +100,8 @@ async function isTableEmpty(req, res, next) {
       status: 400,
       message: `Table is not occupied.`,
     });
+  } else {
+    res.status(200).json({})
   }
 
   next();
@@ -132,15 +134,6 @@ async function create(req, res) {
     });
  }
 
-/* const reservation_id = knex(tableName).where({table_id}).get({reservation_id}) // not sure if this is the correct syntax to get the value of a field.
-const status = knex('reservations').where({reservation_id}).get({status});
-
-if (status === 'seated') {
-return 400 // not sure how you would do this with knex
-}
-
-knex('reservations').where({reservation_id}).update({status: 'seated'});
-return //what you already have here for the table update. */
 
 async function update(req, res, next) {
 	try {
