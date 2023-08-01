@@ -1,6 +1,5 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
-
 // v VALIDATOR FUNCTIONS v
 function hasValidFields(req, res, next) {
   const { data = {} } = req.body;
@@ -16,11 +15,9 @@ function hasValidFields(req, res, next) {
     "updated_at",
     "reservation_id"
   ]);
-
   const invalidFields = Object.keys(data).filter(
     field => !validFields.has(field)
   );
-
   if (invalidFields.length)
     return next({
       status: 400,
@@ -28,10 +25,8 @@ function hasValidFields(req, res, next) {
     });
   next();
 }
-
 function hasReservationId(req, res, next) {
   const reservation = req.params.reservation_id || req.body?.data?.reservation_id;
-
   if(reservation){
       res.locals.reservation_id = reservation;
       next();
@@ -42,8 +37,6 @@ function hasReservationId(req, res, next) {
       });
   }
 }
-
-
 function hasReservationIdForTable(req, res, next) {
   const reservation = req.params.reservation_id || req.params.table_id || req.body?.data?.reservation_id;
   if(reservation){
@@ -56,7 +49,6 @@ function hasReservationIdForTable(req, res, next) {
       });
   }
 }
-
 async function reservationExists(req, res, next) {
   const reservation_id = res.locals.reservation_id;
   const reservation = await service.read(reservation_id);
@@ -67,7 +59,6 @@ async function reservationExists(req, res, next) {
     next({status: 404, message: `Reservation not found: ${reservation_id}`});
   }
 }
-
 function bodyDataHas(propertyName) {
   return function (req, res, next) {
     const { data = {} } = req.body;
@@ -77,12 +68,10 @@ function bodyDataHas(propertyName) {
     next({ status: 400, message: `Must include a ${propertyName}` });
   };
 }
-
 function isValidDate(req, res, next){
   const { data = {} } = req.body;
   const reservation_date = new Date(data['reservation_date']);
   const day = reservation_date.getUTCDay();
-
   if (isNaN(Date.parse(data['reservation_date']))){
       return next({ status: 400, message: `Invalid reservation_date` });
   }
@@ -118,13 +107,12 @@ function isValidTime(req, res, next) {
 
 function isTime(req, res, next){
   const { data = {} } = req.body;
-  
+
   if (/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(data['reservation_time']) || /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(data['reservation_time']) ){
     return next();
   }
   next({ status: 400, message: `Invalid reservation_time` });
 }
-
 function checkStatus(req, res, next){
   const { data = {} } = req.body;
   if (data['status'] === 'seated' || data['status'] === 'finished'){
@@ -132,7 +120,6 @@ function checkStatus(req, res, next){
   }
   next();
 }
-
 function isValidNumber(req, res, next){
   const { data = {} } = req.body;
   if (data['people'] === 0 || !Number.isInteger(data['people'])){
@@ -140,11 +127,8 @@ function isValidNumber(req, res, next){
   }
   next();
 }
-
 // ^ VALIDATOR FUNCTIONS ^
-
 // v FETCH FUNCTIONS v
-
 async function list(req, res) {
  // const mobile_number = req.query.mobile_number;
 /*   const data = await (
@@ -158,28 +142,23 @@ async function list(req, res) {
     data: await service.list(req.query.date)
   });
 }
-
 // retrieves all reservations for creating a new reservation
 async function listAll(req, res){
   data = await service.listAll();
   res.json({data});
 }
-
 async function create(req, res) {
   const data = await service.create(req.body.data);
-
   res.status(201).json({
     data: data,
   });
 }
-
 async function read(req, res) {
   const data = res.locals.reservation;
   res.status(200).json({
     data,
   })
 }
-
 async function status(req, res) {
   res.locals.reservation.status = req.body.data.status;
   const data = await service.status(res.locals.reservation);
@@ -204,11 +183,8 @@ async function update(req, res) {
   const data = await service.status(req.body.data);
   res.json({ data });
 }
-
 // ^ FETCH FUNCTIONS ^
-
 // v VALIDATORS v
-
 const has_first_name = bodyDataHas("first_name");
 const has_last_name = bodyDataHas("last_name");
 const has_mobile_number = bodyDataHas("mobile_number");
@@ -218,9 +194,7 @@ const has_people = bodyDataHas("people");
 const has_capacity = bodyDataHas("capacity");
 const has_table_name = bodyDataHas("table_name");
 const has_reservation_id = bodyDataHas("reservation_id");
-
 // ^ VALIDATORS ^
-
 module.exports = {
   create: [
       hasValidFields,

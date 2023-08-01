@@ -87,13 +87,13 @@ async function isTableEmpty(req, res, next) {
       status: 400,
       message: `Table is not occupied.`,
     });
-  } else {
-    res.status(200).json({})
   }
-
   next();
 }
+
+
 // v FETCH FUNCTIONS v
+
 async function list(req, res) {
      res.json({
        data: await service.list(req.query)
@@ -115,33 +115,44 @@ async function create(req, res) {
     });
  }
 
+/* const reservation_id = knex(tableName).where({table_id}).get({reservation_id}) // not sure if this is the correct syntax to get the value of a field.
+const status = knex('reservations').where({reservation_id}).get({status});
+if (status === 'seated') {
+return 400 // not sure how you would do this with knex
+}
+knex('reservations').where({reservation_id}).update({status: 'seated'});
+return //what you already have here for the table update. */
 
 async function update(req, res, next) {
 	try {
 		const { table_id } = res.locals;
 		const { reservation_id } = req.body.data; // Get reservation_id and people from the request body
-		
+
 		const {status} = await service.getReservationStatus({ reservation_id });
 		if (status === 'seated') {
 			throw new Error(`reservation id ${reservation_id} has already been seated`);
 		}
+
 		const data = await service.update({ table_id, reservation_id }); // Pass both table_id and reservation_id to the service
 		await service.updateReservationStatus({ reservation_id, status: 'seated' });
-		
+
 		res.status(200).json({data});
 	} catch (err) {
 		console.error(err);
 		res.status(400).json({ error: err.message})
 	}
 }
+
 async function emptyTable(req, res) {
 	const { table_id } = res.locals;
 	const { reservation_id } = req.body.data; // Get reservation_id and people from the request body
   console.log("*****************", table_id)
 	const data = await service.emptyTable( table_id );
 	await service.updateReservationStatus({ reservation_id, status: 'finished' });
+
   res.status(200).json({})
 }
+
 // v ADDITIONAL VALIDATORS v
  const has_table_name = bodyDataHas("table_name")
  const has_capacity = bodyDataHas("capacity")
