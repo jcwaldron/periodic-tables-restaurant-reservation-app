@@ -1,7 +1,10 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
+
+
 // v VALIDATOR FUNCTIONS v
 function hasValidFields(req, res, next) {
+
   const { data = {} } = req.body;
   const validFields = new Set([
     "first_name",
@@ -15,9 +18,11 @@ function hasValidFields(req, res, next) {
     "updated_at",
     "reservation_id"
   ]);
+
   const invalidFields = Object.keys(data).filter(
     field => !validFields.has(field)
   );
+
   if (invalidFields.length)
     return next({
       status: 400,
@@ -25,6 +30,7 @@ function hasValidFields(req, res, next) {
     });
   next();
 }
+
 function hasReservationId(req, res, next) {
   const reservation = req.params.reservation_id || req.body?.data?.reservation_id;
   if(reservation){
@@ -37,6 +43,7 @@ function hasReservationId(req, res, next) {
       });
   }
 }
+
 function hasReservationIdForTable(req, res, next) {
   const reservation = req.params.reservation_id || req.params.table_id || req.body?.data?.reservation_id;
   if(reservation){
@@ -49,6 +56,7 @@ function hasReservationIdForTable(req, res, next) {
       });
   }
 }
+
 async function reservationExists(req, res, next) {
   const reservation_id = res.locals.reservation_id;
   const reservation = await service.read(reservation_id);
@@ -59,6 +67,7 @@ async function reservationExists(req, res, next) {
     next({status: 404, message: `Reservation not found: ${reservation_id}`});
   }
 }
+
 function bodyDataHas(propertyName) {
   return function (req, res, next) {
     const { data = {} } = req.body;
@@ -68,6 +77,7 @@ function bodyDataHas(propertyName) {
     next({ status: 400, message: `Must include a ${propertyName}` });
   };
 }
+
 function isValidDate(req, res, next){
   const { data = {} } = req.body;
   const reservation_date = new Date(data['reservation_date']);
@@ -121,8 +131,6 @@ function isValidTime(req, res, next) {
 	next();
 }
 
-
-
 function isTime(req, res, next){
   const { data = {} } = req.body;
 
@@ -150,18 +158,36 @@ function isValidNumber(req, res, next){
 // ^ VALIDATOR FUNCTIONS ^
 
 // v FETCH FUNCTIONS v
+
+/*
 async function list(req, res) {
- // const mobile_number = req.query.mobile_number;
-/*   const data = await (
+ const mobile_number = req.query.mobile_number;
+   const data = await (
       
  //   mobile_number
     req.query.date
     ? service.list(req.query.date)
     : service.listAll()
-  ); */
+  ); 
   res.json({
     data: await service.list(req.query.date)
   });
+}
+*/
+
+async function list(req, res) {
+	const { date, mobile_number } = req.query;
+
+	if (date) {
+		const data = await service.list(date);
+		res.json({ data });
+	} else if (mobile_number) {
+		const data = await service.search(mobile_number);
+		res.json({ data });
+	} else {
+		const data = await service.listAll();
+		res.json({ data });
+	}
 }
 
 // retrieves all reservations for creating a new reservation

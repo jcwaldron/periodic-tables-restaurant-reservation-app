@@ -5,6 +5,7 @@ import NewReservation from "../reservations/NewReservation";
 import NewTable from "../tables/NewTable";
 import Seat from "../reservations/Seat";
 import NotFound from "./NotFound";
+import Search from "../search/Search"
 import { today } from "../utils/date-time";
 
 const { REACT_APP_API_BASE_URL } = process.env;
@@ -93,6 +94,9 @@ function Routes() {
         error={error}
         setError={setError}
         />
+      </Route>
+      <Route exact={true} path="/search">
+        <Search />
       </Route>
       <Route>
         <NotFound />
