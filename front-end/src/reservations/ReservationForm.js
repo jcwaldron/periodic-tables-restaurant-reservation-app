@@ -46,7 +46,7 @@ function ReservationForm({
           </div>
           <div className="pb-1">
             <input
-              type="tel"
+              type="number"
               name="mobile_number"
               className="formInput"
               id="mobile_number"

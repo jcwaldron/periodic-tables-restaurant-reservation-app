@@ -1,13 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { cancelReservation } from "../utils/api";
+import { listReservations, cancelReservation } from "../utils/api";
 
-function ReservationItem({ reservation, date}) {
+function ReservationItem({ reservation, setReservations, date}) {
   const { reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people, status } = reservation;
 
   const [error, setError] = useState(null);
 
   const history = useHistory();
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    const abortController = new AbortController();
+    setError(null);
+    try {
+      const data = await listReservations({date}, abortController.signal);
+      setReservations(data);
+    } catch (error) {
+      setError(error);
+    }
+    return () => abortController.abort();
+  }
 
   async function handleCancelReservation(e) {
     e.preventDefault();
@@ -21,7 +37,7 @@ function ReservationItem({ reservation, date}) {
 
     try {
       await cancelReservation(reservation_id, ac.signal);
-      history.push("/dashboard")
+      loadDashboard();
     } catch (error) {
       setError(error);
     }

@@ -78,22 +78,30 @@ function bodyDataHas(propertyName) {
   };
 }
 
-function isValidDate(req, res, next){
+function isValidDate(req, res, next) {
   const { data = {} } = req.body;
   const reservation_date = new Date(data['reservation_date']);
+
+  // Convert the reservation_date to a date string and extract only the date part
+  const dateOnly = reservation_date.toISOString().split('T')[0];
+
   const day = reservation_date.getUTCDay();
-  if (isNaN(Date.parse(data['reservation_date']))){
-      return next({ status: 400, message: `Invalid reservation_date` });
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0); // Set time to 00:00:00:000
+
+  if (isNaN(Date.parse(data['reservation_date']))) {
+    return next({ status: 400, message: `Invalid reservation_date` });
   }
   if (day === 2) {
-      return next({ status: 400, message: `Restaurant is closed on Tuesdays` });
+    return next({ status: 400, message: `Restaurant is closed on Tuesdays` });
   }
-  
-  if (reservation_date < new Date()) {
-      return next({ status: 400, message: `Reservation must be set in the future` });
+
+  if (dateOnly < currentDate.toISOString().split('T')[0]) {
+    return next({ status: 400, message: `Reservation must be set in the future` });
   }
   next();
 }
+
 
 function isValidTime(req, res, next) {
 	const { reservation_date, reservation_time } = req.body.data;
@@ -158,22 +166,6 @@ function isValidNumber(req, res, next){
 // ^ VALIDATOR FUNCTIONS ^
 
 // v FETCH FUNCTIONS v
-
-/*
-async function list(req, res) {
- const mobile_number = req.query.mobile_number;
-   const data = await (
-      
- //   mobile_number
-    req.query.date
-    ? service.list(req.query.date)
-    : service.listAll()
-  ); 
-  res.json({
-    data: await service.list(req.query.date)
-  });
-}
-*/
 
 async function list(req, res) {
 	const { date, mobile_number } = req.query;
