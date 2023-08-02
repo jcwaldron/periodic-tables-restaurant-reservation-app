@@ -6,7 +6,7 @@ function list(date) {
   return knex(tableName)
     .select("*")
     .where({reservation_date: date})
-    .whereNotIn("status", ["finished", "cancelled"])
+    .whereNotIn("status", ["finished"])
     .orderBy("reservation_time", "asc");
 }
 

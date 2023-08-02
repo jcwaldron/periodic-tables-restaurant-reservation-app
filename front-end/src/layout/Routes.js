@@ -84,7 +84,7 @@ function Routes() {
         <NewReservation />
       </Route>
       <Route exact={true} path="/tables/new">
-        <NewTable />
+        <NewTable fetchTables={fetchTables} setTables={setTables} tables={tables}/>
       </Route>
       <Route exact={true} path="/reservations/:reservationId/seat">
         <Seat        

@@ -13,10 +13,22 @@ const { REACT_APP_API_BASE_URL } = process.env;
  * @returns {JSX.Element}
  */
 
+/* async function loadDashboard(date, setReservations, setReservationsError) {
+  const abortController = new AbortController();
+  setReservationsError(null);
+  try {
+    const reservations = await listReservations({ date }, abortController.signal);
+    setReservations(reservations);
+  } catch (error) {
+    setReservationsError(error);
+  }
+  return () => abortController.abort();
+} */
+
 function Dashboard({today,
     reservations, setReservations,
     reservationsError, setReservationsError,
-    tables, setTables, fetchTables, error, setError
+    tables, setTables, error, setError
 }) {
   const query = useQuery();
   let date = query.get("date");
@@ -188,7 +200,12 @@ async function handleFinishConfirmation(table_id) {
       </div>
       <div className="d-md-flex mb-3">
         <div id="reservationsSection" className="d-md-flex mb-3">
-          <ReservationsList reservations={reservations}/>
+          <ReservationsList 
+          reservations={reservations} 
+          setReservations={setReservations} 
+          setReservationsError={setReservationsError}
+          loadDashboard={loadDashboard}
+          date={date}/>
         </div>
         <div className="tablesSection">
           <h4>Tables</h4>
@@ -201,4 +218,5 @@ async function handleFinishConfirmation(table_id) {
   );
 }
 
+//export {loadDashboard}
 export default Dashboard;

@@ -1,8 +1,34 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+import { cancelReservation } from "../utils/api";
 
-function ReservationItem({ reservation }) {
+function ReservationItem({ reservation, date}) {
   const { reservation_id, first_name, last_name, reservation_date, reservation_time, mobile_number, people, status } = reservation;
+
+  const [error, setError] = useState(null);
+
+  const history = useHistory();
+
+  async function handleCancelReservation(e) {
+    e.preventDefault();
+    const ac = new AbortController();
+    
+    const confirm = window.confirm(
+      "Are you sure you want to cancel this reservation? This cannot be undone."
+    )
+
+    if (confirm) {
+
+    try {
+      await cancelReservation(reservation_id, ac.signal);
+      history.push("/dashboard")
+    } catch (error) {
+      setError(error);
+    }
+    return () => ac.abort();
+  }
+}
+
 
   return (
     <div key={reservation_id} className="mr-4">
@@ -21,17 +47,25 @@ function ReservationItem({ reservation }) {
             Seat
           </Link>
         )}
-        {status === "booked" || status === "seated" ? (
-          <Link to={`/reservations/${reservation_id}/edit`} className="btn btn-secondary mt-1">
+        {status === "booked" || status === "seated" || status === "canceled" ? (
+          <Link to={`/reservations/${reservation_id}/edit`} className="btn btn-secondary mt-1 mr-1">
             Edit
           </Link>
         ) : null}
-
+        {status === "booked" || status === "seated" ? (
+          <button onClick={handleCancelReservation} className="btn btn-danger mt-1">
+            Cancel
+          </button>
+        ) : null}
       </div>
     </div>
   );
 }
 
-export default function ReservationsList({ reservations }) {
-  return reservations.map((reservation) => <ReservationItem key={reservation.reservation_id} reservation={reservation} />);
+export default function ReservationsList({ reservations, setReservations, setReservationsError, date }) {
+  return reservations.map((reservation) => <ReservationItem key={reservation.reservation_id} 
+  reservation={reservation} 
+  setReservations={setReservations}
+  setReservationsError={setReservationsError}
+  date={date}/>);
 }
