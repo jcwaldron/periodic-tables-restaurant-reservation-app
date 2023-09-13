@@ -10,6 +10,8 @@ Front-end: https://restaurant-reservation-app-front-end-s7cy.onrender.com
 
 Back-end: https://restaurant-reservation-app-backend-0sks.onrender.com
 
+Project management: https://github.com/users/jcwaldron/projects/2
+
 
 ## Run Locally
 
